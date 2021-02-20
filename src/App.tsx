@@ -12,19 +12,31 @@ import {
     VideoCameraOutlined,
 } from '@ant-design/icons';
 import {SketchPicker} from 'react-color';
+import {ColorSlot} from "./ColorSlot";
 
 const {Header, Content, Footer, Sider} = Layout;
 const {Title, Text} = Typography;
 const {TabPane} = Tabs;
 
 export const App = () => {
-    const [modal2Visible, setModal2Visible] = useState(false);
+    const [modalIdx, setModalIdx] = useState<number>(-1);
     const addPalette: any = {type: 'button', name: 'add'};
-    const [palettes, setPalettes] = useState([]);
+    const [palettes, setPalettes] = useState<any>([]);
     const [currentRed, setCurrentRed] = useState<number>(255)
     const [currentGreen, setCurrentGreen] = useState<number>(255)
     const [currentBlue, setCurrentBlue] = useState<number>(255)
     const [currentColor, setCurrentColor] = useState<string>('#fff')
+    const popover: any = {
+        position: 'absolute',
+        zIndex: '2',
+    }
+    const cover: any = {
+        position: 'fixed',
+        top: '0px',
+        right: '0px',
+        bottom: '0px',
+        left: '0px',
+    }
 
     return (
         <div className="App">
@@ -84,19 +96,6 @@ export const App = () => {
                                 <br/>
                                 <Row>
                                     <Col span={4}>
-                                        Palette
-                                    </Col>
-                                    <Col span={1}/>
-                                    <Col span={19}>
-                                        <SketchPicker
-                                            color={currentColor}
-                                            onChangeComplete={(color: any) => setCurrentColor(color.hex)}
-                                        />
-                                    </Col>
-                                </Row>
-                                <br/>
-                                <Row>
-                                    <Col span={4}>
                                         <Text>Palette</Text>
                                     </Col>
                                     <Col span={1}/>
@@ -106,16 +105,19 @@ export const App = () => {
                                             dataSource={palettes.concat(addPalette)}
                                             renderItem={(item: any) => {
                                                 if (item.type === 'color') {
-                                                    return <div style={{
-                                                        border: '1px solid black',
-                                                        backgroundColor: `rgb(${item.r},${item.g},${item.b})`,
-                                                        height: '50px'
-                                                    }}/>
+                                                    return <ColorSlot item={item} modalIdx={() => modalIdx}
+                                                                      setModalIdx={(id: number) => setModalIdx(id)}/>
                                                 } else if (item.type === 'button' && item.name === 'add') {
                                                     return (<div style={{
                                                         border: '1px solid black',
                                                         height: '50px'
-                                                    }} onClick={() => setModal2Visible(true)}>
+                                                    }} onClick={() => setPalettes([...palettes].concat({
+                                                        type: 'color',
+                                                        id: palettes.length,
+                                                        r: 0,
+                                                        g: 0,
+                                                        b: 0
+                                                    }))}>
                                                         <Space direction={'horizontal'}
                                                                style={{
                                                                    height: '100%',
@@ -152,79 +154,6 @@ export const App = () => {
                     </Layout>
                 </Layout>
             </Row>
-            <Modal
-                title="Add new palette"
-                centered
-                visible={modal2Visible}
-                onOk={() => {
-                    setModal2Visible(false);
-                    const colors: any = [...palettes];
-                    setPalettes(colors.concat({
-                        type: 'color',
-                        r: currentRed,
-                        g: currentGreen,
-                        b: currentBlue
-                    }));
-                }}
-                onCancel={() => setModal2Visible(false)}
-            >
-                <Row>
-                    <Col span={11} style={{
-                        border: '1px solid black',
-                        backgroundColor: `rgb(${currentRed},${currentGreen},${currentBlue})`
-                    }}/>
-                    <Col span={2}/>
-                    <Col span={11}>
-                        <Tabs defaultActiveKey="1">
-                            <TabPane tab="RGB" key="RGB">
-                                <Form labelCol={{span: 8}} wrapperCol={{span: 16}} name={'rgb_form'}
-                                      onFinish={(values: any) => console.log(values)}
-                                      onFinishFailed={(errorInfo: any) => console.log('Failed:', errorInfo)}>
-                                    <Form.Item
-                                        label="Red"
-                                        name="Red"
-                                        rules={[{required: true, message: 'Please input the Red component'}]}
-                                    >
-                                        <Slider
-                                            min={0}
-                                            max={255}
-                                            onChange={(value: number) => setCurrentRed(value)}
-                                            value={currentRed}
-                                        />
-                                    </Form.Item>
-                                    <Form.Item
-                                        label="Green"
-                                        name="Green"
-                                        rules={[{required: true, message: 'Please input the Green component'}]}
-                                    >
-                                        <Slider
-                                            min={0}
-                                            max={255}
-                                            onChange={(value: number) => setCurrentGreen(value)}
-                                            value={currentGreen}
-                                        />
-                                    </Form.Item>
-                                    <Form.Item
-                                        label="Blue"
-                                        name="Blue"
-                                        rules={[{required: true, message: 'Please input the Blue component'}]}
-                                    >
-                                        <Slider
-                                            min={0}
-                                            max={255}
-                                            onChange={(value: number) => setCurrentBlue(value)}
-                                            value={currentBlue}
-                                        />
-                                    </Form.Item>
-                                </Form>
-                            </TabPane>
-                            <TabPane tab="HSV" key="HSV">
-                                Content of Tab Pane 2
-                            </TabPane>
-                        </Tabs>
-                    </Col>
-                </Row>
-            </Modal>
         </div>
     );
 }
